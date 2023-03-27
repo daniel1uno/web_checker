@@ -52,7 +52,7 @@ def index():
             results[url + " ONE_LEVEL_SCRAP_IN_HINDI"] = random_ref_result
 
 
-        driver.quit()
+        # driver.quit()
         return results
 
     def check_language(url,soup):
