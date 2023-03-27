@@ -4,4 +4,4 @@ langdetect
 requests
 scikit_learn
 selenium
-webdriver-manager.
+webdriver-manager
