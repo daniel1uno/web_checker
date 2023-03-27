@@ -1,19 +1,23 @@
 from langdetect import detect
-from selenium import webdriver
+#from selenium import webdriver
 from bs4 import BeautifulSoup
 import requests
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-import time
+#import time
 import random
 from flask import Flask, render_template, request
-from webdriver_manager.chrome import ChromeDriverManager
-from selenium.webdriver.chrome.service import Service
+#from webdriver_manager.chrome import ChromeDriverManager
+#from selenium.webdriver.chrome.service import Service
 
-service = Service(ChromeDriverManager().install())
-options = webdriver.ChromeOptions()
-options.add_argument('--headless') # Run Chrome in headless mode
-driver = webdriver.Chrome(executable_path="opt/render/project/chromedriver",service=service, options=options)
+#chrome_options = webdriver.ChromeOptions()
+#chrome_options.add_argument("--no-sandbox")
+#chrome_options.add_argument("--headless")
+#chrome_options.add_argument("--disable-gpu")
+
+#service = Service(ChromeDriverManager().install())
+
+#driver = webdriver.Chrome(executable_path='chromedriver', options=chrome_options)
 
 # Define an user agent to use in headers- mimic a browser
 user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"
@@ -26,13 +30,13 @@ def index():
     def check_web_page(urls):
         results = {}
         for url in urls:
-            driver.get(url)
-            for i in range(3): # scroll 20 times
-                driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-                time.sleep(2) # wait for 2 seconds to load the next part of the page
-            content = driver.page_source
-            soup = BeautifulSoup(content, 'html.parser')
-           
+            response = requests.get(url, headers=headers)
+            #for i in range(3): # scroll 20 times
+                #driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+                #time.sleep(2) # wait for 2 seconds to load the next part of the page
+            #content = driver.page_source
+            soup = BeautifulSoup(response.content, 'html.parser')
+
             correct_webpage = check_clone(url, soup)
             results[url + " CORRECT_WEBPAGE"] = correct_webpage
             if correct_webpage == False:
@@ -42,12 +46,12 @@ def index():
             results[url + " LANGUAGE"] = lang_result
             img_result = check_images(url, soup)
             results[url + " BLURRED_IMAGES"] = img_result
-            js_result = check_js(url)
-            results[url + " MENUS_HOVER"] = js_result
+            #js_result = check_js(url)
+            #results[url + " MENUS_HOVER"] = js_result
             random_ref_result = check_ramdom_ref(url,soup)
             results[url + " ONE_LEVEL_SCRAP_IN_HINDI"] = random_ref_result
-            
-        
+
+
         driver.quit()
         return results
 
@@ -70,7 +74,7 @@ def index():
             if src and "blur=" in src:
                 print('Images in',url,'are blurred')
                 return False
-            
+
             else:
                 print('Images in',url,'are good')
                 return True
@@ -83,7 +87,7 @@ def index():
         # Extract the textual content of the two webpages
         text1 = " ".join([tag.text for tag in soup.find_all()])
         text2 = " ".join([tag.text for tag in soup2.find_all()])
-        
+
         # Compute the cosine similarity between the textual content of the two webpages
         vectorizer = CountVectorizer().fit_transform([text1, text2])
         similarity = cosine_similarity(vectorizer)[0,1]
@@ -96,18 +100,18 @@ def index():
             print(url, " and classcentral.com do not have the same content (its not a clone of the correct page)")
             return False
 
-    def check_js(url):
+    #def check_js(url):
         # Check for errors in the console output
-        console_log = driver.get_log("browser")
-        failed = []
-        for entry in console_log:
-            if entry["level"] == "SEVERE" and "Failed to load resource" in entry["message"] and ".js"  in entry["message"]:
-                failed.append(False)
-                print(url, " has unresolved js references, menus and hovers wont work")
-        if False in failed:
-            return False  
-        else:
-            return True
+        #console_log = driver.get_log("browser")
+        #failed = []
+        #for entry in console_log:
+            #if entry["level"] == "SEVERE" and "Failed to load resource" in entry["message"] and ".js"  in entry["message"]:
+                #failed.append(False)
+                #print(url, " has unresolved js references, menus and hovers wont work")
+        #if False in failed:
+            #return False
+        #else:
+            #return True
 
     def check_ramdom_ref(url,soup):
         # Find all href links on the page
@@ -142,6 +146,6 @@ def index():
     else:
         # Render the template with the form to enter URLs
         return render_template('index.html')
-    
+
 if __name__ == '__main__':
     app.run(debug=True)
