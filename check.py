@@ -7,10 +7,13 @@ from sklearn.metrics.pairwise import cosine_similarity
 import time
 import random
 from flask import Flask, render_template, request
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.chrome.service import Service
 
+service = Service(ChromeDriverManager().install())
 options = webdriver.ChromeOptions()
 options.add_argument('--headless') # Run Chrome in headless mode
-driver = webdriver.Chrome(executable_path='chromedriver', options=options)
+driver = webdriver.Chrome(service=service, options=options)
 
 # Define an user agent to use in headers- mimic a browser
 user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"
@@ -31,18 +34,18 @@ def index():
             soup = BeautifulSoup(content, 'html.parser')
            
             correct_webpage = check_clone(url, soup)
-            results[url + "_correct_webpage"] = correct_webpage
-            if correct_webpage != True:
+            results[url + " CORRECT_WEBPAGE"] = correct_webpage
+            if correct_webpage == False:
                 continue
 
             lang_result = check_language(url,soup)
-            results[url + "_language"] = lang_result
+            results[url + " LANGUAGE"] = lang_result
             img_result = check_images(url, soup)
-            results[url + "_images"] = img_result
+            results[url + " BLURRED_IMAGES"] = img_result
             js_result = check_js(url)
-            results[url + "_js"] = js_result
+            results[url + " MENUS_HOVER"] = js_result
             random_ref_result = check_ramdom_ref(url,soup)
-            results[url + "_random_ref"] = random_ref_result
+            results[url + " ONE_LEVEL_SCRAP_IN_HINDI"] = random_ref_result
             
         
         driver.quit()
@@ -132,7 +135,7 @@ def index():
 
     if request.method == 'POST':
         # Retrieve the URLs entered by the user
-        urls = request.form['urls'].split('\n')
+        urls = request.form['urls'].split(',')
         results = check_web_page(urls)
         print(results)
         return render_template('results.html', results=results)
