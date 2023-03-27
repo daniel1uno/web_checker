@@ -96,11 +96,15 @@ def index():
     def check_js(url):
         # Check for errors in the console output
         console_log = driver.get_log("browser")
+        failed = []
         for entry in console_log:
             if entry["level"] == "SEVERE" and "Failed to load resource" in entry["message"] and ".js"  in entry["message"]:
-                
+                failed.append(False)
                 print(url, " has unresolved js references, menus and hovers wont work")
-            
+        if False in failed:
+            return False  
+        else:
+            return True
 
     def check_ramdom_ref(url,soup):
         # Find all href links on the page
@@ -109,7 +113,7 @@ def index():
         random_hrefs = random.sample(hrefs, 5)
         # Filter out any None values or empty strings
         random_hrefs = [href for href in random_hrefs if href]
-
+        results_link = []
         for index, href in enumerate(random_hrefs):
             if href.startswith(('http://', 'https://')):
                 pass
@@ -118,8 +122,13 @@ def index():
                 # Get webpage using request
                 response = requests.get(url, headers=headers)
                 soupLink = BeautifulSoup(response.content, "html.parser")
-                check_language(href,soupLink)
+                result = check_language(href,soupLink)
+                results_link.append(result)
 
+        if False in results_link:
+            return False
+        else:
+            return True
 
     if request.method == 'POST':
         # Retrieve the URLs entered by the user
