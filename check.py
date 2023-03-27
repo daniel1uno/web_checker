@@ -13,7 +13,7 @@ from selenium.webdriver.chrome.service import Service
 service = Service(ChromeDriverManager().install())
 options = webdriver.ChromeOptions()
 options.add_argument('--headless') # Run Chrome in headless mode
-driver = webdriver.Chrome(executable_path="chromedriver",service=service, options=options)
+driver = webdriver.Chrome(executable_path="opt/render/project/chromedriver",service=service, options=options)
 
 # Define an user agent to use in headers- mimic a browser
 user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"
